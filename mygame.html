@@ -1,0 +1,215 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+    <title>Pete's Game</title>
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+
+    game.load.image('space', 'assets/space1_0_background.png');
+	//game.load.image('bgbattleship', 'assets/bgbattleship.png');
+    game.load.image('bgspeedship', 'assets/bgspeedship.png');
+	//game.load.image('speedship', 'assets/speedship.png');
+	//game.load.image('smallfreighter', 'assets/smallfreighterspr.png');
+	//game.load.image('medfreighter', 'assets/medfreighter.png');
+	//game.load.image('medfighter', 'assets/medfighter.png');
+	//game.load.image('heavyfreighter', 'assets/heavyfreighter.png');
+	    
+}
+
+var player;
+
+function create() {
+
+    // Choose Game Physics
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    //  Create background image sprite
+    game.add.sprite(0, 0, 'space');
+
+    // Battleship player sprite
+    //player = game.add.sprite(32, game.world.height - 150, 'bgbattleship');
+    player = game.add.sprite(32, game.world.height - 150, 'bgspeedship');
+    //player = game.add.sprite(32, game.world.height - 150, 'speedship');
+    //player = game.add.sprite(32, game.world.height - 150, 'smallfreighter');
+    //player = game.add.sprite(32, game.world.height - 150, 'medfreighter');
+    //player = game.add.sprite(32, game.world.height - 150, 'medfighter');
+    //player = game.add.sprite(32, game.world.height - 150, 'heavyfreighter');
+
+    // Enable player physics
+    game.physics.arcade.enable(player);
+
+    // =================================================================
+    // Insert Credit here
+    // Define motion constants
+    this.ROTATION_SPEED = 180; // degrees/second
+    this.ACCELERATION = 200; // pixels/second/second
+    this.MAX_SPEED = 250; // pixels/second
+    this.DRAG = 0; // pixels/second
+    this.GRAVITY = 50; // pixels/second/second
+
+    // Set maximum velocity
+    this.player.body.maxVelocity.setTo(this.MAX_SPEED, this.MAX_SPEED); // x, y
+
+    // Add drag to the ship that slows it down when it is not accelerating
+    this.player.body.drag.setTo(this.DRAG, this.DRAG); // x, y
+
+    // Choose a random starting angle and velocity for the ship
+    this.resetPlayer();
+
+    // Turn on gravity
+    game.physics.arcade.gravity.y = this.GRAVITY;
+
+    // Make ship bounce a little
+    this.player.body.bounce.setTo(0.25, 0.25);
+
+    // Capture certain keys to prevent their default actions in the browser.
+    // This is only necessary because this is an HTML5 game. Games on other
+    // platforms may not need code like this.
+    this.game.input.keyboard.addKeyCapture([
+        Phaser.Keyboard.LEFT,
+        Phaser.Keyboard.RIGHT,
+        Phaser.Keyboard.UP,
+        Phaser.Keyboard.DOWN
+    ]);
+
+    // =================================================================
+
+    // player properties
+    player.body.collideWorldBounds = true;
+
+    // create controls
+    //cursors = game.input.keyboard.createCursorKeys();
+    
+};
+
+    // =================================================================
+    // Insert Credit here
+   function resetPlayer() {
+    // Move the ship back to the top of the stage
+    this.player.x = 50;
+    this.player.y = 50;
+    this.player.body.acceleration.setTo(0, 0);
+
+    // Select a random starting angle and velocity
+    this.player.angle = this.game.rnd.integerInRange(-180, 180);
+    this.player.body.velocity.setTo(this.game.rnd.integerInRange(100, 200), 0);
+};
+    // =================================================================
+
+
+function update() {
+    // =================================================================
+    // Insert Credit here
+    // Collide the ship with the ground
+    this.game.physics.arcade.collide(this.player, this.ground); // ????
+
+    if (this.leftInputIsActive()) {
+        // If the LEFT key is down, rotate left
+        this.player.body.angularVelocity = -this.ROTATION_SPEED;
+    } else if (this.rightInputIsActive()) {
+        // If the RIGHT key is down, rotate right
+        this.player.body.angularVelocity = this.ROTATION_SPEED;
+    } else {
+        // Stop rotating
+        this.player.body.angularVelocity = 0;
+    }
+
+    // Set a variable that is true when the ship is touching the ground
+    var onTheGround = this.player.body.touching.down;
+
+    if (onTheGround) {
+        if (Math.abs(this.player.body.velocity.y) > 20 || Math.abs(this.player.body.velocity.x) > 30) {
+            // The ship hit the ground too hard.
+            // Blow it up and start the game over.
+            
+            this.resetPlayer();
+        } else {
+            // We've landed!
+            // Stop rotating and moving and aim the ship up. Modify!!!!!!
+            this.player.body.angularVelocity = 0;
+            this.player.body.velocity.setTo(0, 0);
+            this.player.angle = -90;
+        }
+
+    }
+
+    if (this.upInputIsActive()) {
+        // If the UP key is down, thrust
+        // Calculate acceleration vector based on this.angle and this.ACCELERATION
+        this.player.body.acceleration.x = Math.cos(this.player.rotation) * this.ACCELERATION;
+        this.player.body.acceleration.y = Math.sin(this.player.rotation) * this.ACCELERATION;
+    } else {
+        // Otherwise, stop thrusting
+        this.player.body.acceleration.setTo(0, 0);
+    }
+
+
+
+    // =================================================================
+
+
+// player.body.velocity.x = 0;
+
+// 	if (cursors.left.isDown)
+// 	{
+// 		player.body.velocity.x = -150;
+// 	}
+// 	else if (cursors.right.isDown)
+// 	{
+// 		player.body.velocity.x = 150;
+// 	}
+// 	else if (cursors.up.isDown)
+// 	{
+// 		player.body.velocity.y = -150;
+// 	}
+// 	else
+// 	{
+// 		player.body.gravity.y = 150;
+// 	}
+
+};
+
+// =================================================================
+// Insert Credit here
+
+// Left Arrow Control
+function leftInputIsActive() {
+    var isActive = false;
+    isActive = this.input.keyboard.isDown(Phaser.Keyboard.LEFT);
+    return isActive;
+};
+
+// Right Arror Control
+function rightInputIsActive() {
+    var isActive = false;
+    isActive = this.input.keyboard.isDown(Phaser.Keyboard.RIGHT);
+    return isActive;
+};
+
+// Up Arrow Control
+function upInputIsActive() {
+    var isActive = false;
+    isActive = this.input.keyboard.isDown(Phaser.Keyboard.UP);
+    return isActive;
+};
+
+
+// =================================================================
+
+</script>
+
+</body>
+</html>
